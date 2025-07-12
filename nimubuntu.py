@@ -191,7 +191,7 @@ class NIMManager_ubuntu:
             f"docker run --rm "
             f"--gpus all " # 使用 --gpus 标志
             f"--name={model_name.value} "
-            f"--shm-size=16GB "
+            f"--shm-size=64GB " # 由 16GB 增加到 64GB
             f"-e NGC_API_KEY={self.api_key} "
             f"-v {cache_path}:/opt/nim/.cache "
             f"-e NIM_RELAX_MEM_CONSTRAINTS=1 "
