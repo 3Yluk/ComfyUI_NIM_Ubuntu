@@ -10,11 +10,10 @@ import torch
 from PIL import Image
 from typing import Dict, Tuple
 
-from .install import download_installer, run_installer
-from .nim import ModelType, NIMManager, OffloadingPolicy
+from .nimubuntu import ModelType, NIMManager_ubuntu, OffloadingPolicy
 
 
-manager = NIMManager()
+manager = NIMManager_ubuntu()
 
 class NIMFLUXNode:
     def __init__(self):
@@ -80,7 +79,7 @@ class NIMFLUXNode:
         invoke_url = f"http://localhost:{port}/v1/infer"
 
         #mode = model_name.value.split("_")[-1].lower().replace("dev", "base")
-        mode = NIMManager._get_variant(self, model_name)
+        mode = NIMManager_ubuntu._get_variant(self, model_name)
 
         if model_name.value.split('_')[-1].lower() == 'schnell':
             cfg_scale = 0
@@ -193,45 +192,6 @@ class LoadNIMNode:
         return ("",)
 
 
-class InstallNIMNode:
-    def __init__(self):
-        pass
-    
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {}
-        }
-    
-    # RETURN_TYPES = ()
-    RETURN_TYPES = ("BOOLEAN",)
-    RETURN_NAMES = ("is_nim_installed",)
-    OUTPUT_NODE = True
-    FUNCTION = "install_nim"
-    CATEGORY = "NVIDIA/NIM"
-    
-    def install_nim(self):
-        if os.name == 'nt':
-            if manager.is_wsl_distribution_installed(distro_name="NVIDIA-Workbench"):
-                print("NIM node setup is ready.")
-                return (True, )
-            else:
-                import ctypes
-
-                res = ctypes.windll.user32.MessageBoxW(None, "Detected you haven't set up NVIDIA NIM.\n\n" +
-                                "Please ensure you download NIMSetup.exe and install it before attempting to use the node. Click OK to open download website.",
-                                "NIM Installer", 1 | 48)
-                if res == 1:
-                    import webbrowser
-                    webbrowser.open("https://assets.ngc.nvidia.com/products/api-catalog/rtx/NIMSetup.exe")
-
-                raise Exception("Please install NVIDIA NIM first and try again.")
-                
-        else:
-            raise Exception("NIM node setup is only supported for Windows")
-
-        return (False,)
-
 class Get_HFToken:
     def __init__(self):
         pass
@@ -265,14 +225,12 @@ class Get_HFToken:
 # Update the mappings
 NODE_CLASS_MAPPINGS = {
     "LoadNIMNode": LoadNIMNode,
-    "InstallNIMNode": InstallNIMNode,
     "NIMFLUXNode": NIMFLUXNode,
     "Get_HFToken": Get_HFToken
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "LoadNIMNode": "Load NIM",
-    "InstallNIMNode": "Install NIM",
     "NIMFLUXNode": "NIM FLUX",
     "Get_HFToken": "Use HF_TOKEN EnVar"
 }
