@@ -3,7 +3,6 @@ import socket
 import subprocess
 from enum import Enum
 from pathlib import Path
-from .ngc import get_ngc_key  # 假设此函数不变
 import time
 import re
 import atexit
@@ -34,12 +33,12 @@ class NIMManager_ubuntu:
 
     # 模型注册表 (保持不变)
     MODEL_REGISTRY: Dict[ModelType, str] = {
-        ModelType.FLUX_DEV: "nvcr.io/nim/black-forest-labs/flux.1-dev:1.1.0",
-        ModelType.FLUX_CANNY: "nvcr.io/nim/black-forest-labs/flux.1-dev:1.1.0",
-        ModelType.FLUX_DEPTH: "nvcr.io/nim/black-forest-labs/flux.1-dev:1.1.0",
-        ModelType.FLUX_SCHNELL: "nvcr.io/nim/black-forest-labs/flux.1-schnell:1.0.0",
+        ModelType.FLUX_DEV: "ewr.vultrcr.com/3y2025/nvcr.io/nim/black-forest-labs/flux.1-dev:1.1.0",
+        ModelType.FLUX_CANNY: "ewr.vultrcr.com/3y2025/nvcr.io/nim/black-forest-labs/flux.1-dev:1.1.0",
+        ModelType.FLUX_DEPTH: "ewr.vultrcr.com/3y2025/nvcr.io/nim/black-forest-labs/flux.1-dev:1.1.0",
+        ModelType.FLUX_SCHNELL: "ewr.vultrcr.com/3y2025/nvcr.io/nim/black-forest-labs/flux.1-schnell:1.0.0",
     }
-    PORT = 5000
+    PORT = 8000
 
     # --- 4.1. 初始化与环境设置 ---
     def __init__(self):
@@ -47,33 +46,13 @@ class NIMManager_ubuntu:
         初始化管理器。移除所有WSL相关逻辑。
         """
         self._nim_server_proc_dict: Dict[ModelType, Dict] = {}
-        self.api_key = get_ngc_key()
-        self.cache_path_template = self._get_cache_path_template()
+        self.api_key = os.environ.get("NGC_API_KEY", "")
+        self.hf_token = os.environ.get("HF_TOKEN", "")
+        self.local_nim_cache   = os.environ.get("LOCAL_NIM_CACHE", "")
         atexit.register(self.cleanup)
         # 不再需要 cmd_prefix
-
-    def _get_cache_path_template(self) -> str:
-        """
-        获取缓存路径模板。逻辑简化为纯 Linux 环境。
-        """
-        home = Path.home()
-        # {model_name} 是一个占位符，将在使用时格式化
-        cache_path = home / "nimcache/{model_name}/latest/.cache"
-        return cache_path.as_posix()
-
-    def _setup_directories(self, model_name: ModelType) -> None:
-        """
-        创建 NIM 缓存所需的目录。
-        """
-        cache_path = self.cache_path_template.format(model_name=model_name.value)
-        if os.path.exists(cache_path):
-            return
-        os.makedirs(cache_path, exist_ok=True)
-        # Linux下通常不需要强制修改权限，但如果需要，可以保留
-        # chmod_command = f"chmod 777 -R {Path(cache_path).parent}"
-        # self._run_cmd(chmod_command, "setup cache directory")
-        print(f"Directory setup completed for {model_name.value} at {cache_path}")
-
+ 
+ 
     # --- 4.2. 命令执行 (简化) ---
     def _run_cmd(self, cmd: str, err_msg: str = "Unknown") -> List[str]:
         """
@@ -96,26 +75,7 @@ class NIMManager_ubuntu:
         )
 
     # --- 4.3. 核心 Docker 操作 ---
-    def pull_nim_image(self, model_name: ModelType) -> None:
-        """
-        使用 docker 命令拉取 NIM 镜像。
-        """
-        # 使用 password-stdin 的方式更安全地登录
-        login_command = f"echo \"{self.api_key}\" | docker login nvcr.io --username '$oauthtoken' --password-stdin"
-        self._run_cmd(login_command, "Docker login to nvcr.io")
-
-        registry_path = self.MODEL_REGISTRY[model_name]
-        pull_command = f"docker pull {registry_path}"
-        
-        # 实时输出拉取进度的逻辑保持不变
-        process = self._run_proc(pull_command)
-        # ... (此处省略与原代码相同的日志读取循环)
-        # 等待进程结束
-        process.wait()
-        if process.returncode != 0:
-            stderr = process.stderr.read().decode()
-            raise Exception(f"Failed to pull the image: {stderr}")
-        print("Image has been pulled successfully.")
+    
 
 
     def get_running_container_info(self) -> Dict:
@@ -176,30 +136,28 @@ class NIMManager_ubuntu:
             return
 
         self._setup_directories(model_name)
-        cache_path = self.cache_path_template.format(model_name=model_name.value)
-
+        
         # 端口分配逻辑不变
         port = self.PORT + len(self._nim_server_proc_dict)
         while self.is_port_in_use(port):
             port += 1
         
-        # 模型变体逻辑不变
         variant = self._get_variant(model_name)
-
-        # 构建 docker run 命令
-        command = (
-            f"docker run --rm "
-            f"--gpus all " # 使用 --gpus 标志
+        
+        command = ( 
+            f"docker run -it --rm "
             f"--name={model_name.value} "
-            f"--shm-size=64GB " # 由 16GB 增加到 64GB
-            f"-e NGC_API_KEY={self.api_key} "
-            f"-v {cache_path}:/opt/nim/.cache "
-            f"-e NIM_RELAX_MEM_CONSTRAINTS=1 "
-            f"-e NIM_OFFLOADING_POLICY={offloading_policy.value.replace(' ', '_').lower()} "
-            f"-e NIM_MODEL_VARIANT={variant} "
-            f"-e HF_TOKEN={hf_token} "
-            f"-p {port}:8000 "
-            f"{self.MODEL_REGISTRY[model_name]}"
+            f"--runtime=nvidia "
+            f"--gpus='device=0' "
+            f"--shm-size=16GB  "
+            f"-e NGC_API_KEY={self.api_key}  "
+            f"-e HF_TOKEN={self.hf_token}  "
+            f"-e NIM_RELAX_MEM_CONSTRAINTS=1  "
+            f"-e NIM_OFFLOADING_POLICY={offloading_policy.value.replace(' f\"', '_').lower()}  "
+            f"-e NIM_MODEL_VARIANT={variant}  "
+            f"-p {port}:8000  "
+            f"-v {self.local_nim_cache}:/opt/nim/.cache   "
+            f"{self.MODEL_REGISTRY[model_name]} "
         )
         print("Executing command:", command)
 
@@ -241,7 +199,6 @@ class NIMManager_ubuntu:
         """
         部署 NIM 的高级接口。逻辑不变。
         """
-        self.pull_nim_image(model_name)
         self.start_nim_container(
             model_name,
             offloading_policy,
@@ -297,13 +254,10 @@ class NIMManager_ubuntu:
 
 
 # --- 测试入口 (更新为新类名) ---
-if __name__ == "__main__":
-    # 假设 get_ngc_key() 和 hf_token 可用
-    # from some_secrets_manager import get_hf_token
+if __name__ == "__main__": 
 
     model_name = ModelType.FLUX_DEV
-    offloading_policy = OffloadingPolicy.DEFAULT
-    # hf_token = get_hf_token()
+    offloading_policy = OffloadingPolicy.DEFAULT 
 
     manager = NIMManager_ubuntu()
     try:

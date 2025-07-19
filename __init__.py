@@ -158,11 +158,6 @@ class LoadNIMNode:
                     "default": OffloadingPolicy.DEFAULT.value,
                     "tooltip": "Policy to offload models"
                 }),
-                "hf_token": ("STRING", {
-                    "multiline": False,
-                    "default": "Input HF Token",
-                    "tooltip": "Input your Huggingface API Token"
-                }),
                 "is_nim_installed": ("BOOLEAN", {"forceInput": True}),
             }
         }
@@ -192,45 +187,15 @@ class LoadNIMNode:
         return ("",)
 
 
-class Get_HFToken:
-    def __init__(self):
-        pass
-    
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {}
-        }
-    
-    # RETURN_TYPES = ()
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("hf_token",)
-    FUNCTION = "get_token"
-    CATEGORY = "NVIDIA/NIM"
-
-    def get_token(self) -> Tuple[str]:
-        """
-        Retrieves the HF_TOKEN environment variable.
-
-        Returns:
-            Tuple[str]: A tuple containing the token string or an error message.
-        """
-        token = os.environ.get("HF_TOKEN")
-        if token is None:
-            raise ValueError("HF_TOKEN environment variable not set. Workflow execution halted.") #Raise an error.
-        else:
-            return (token,)
 
 # Update the mappings
 NODE_CLASS_MAPPINGS = {
     "LoadNIMNode": LoadNIMNode,
-    "NIMFLUXNode": NIMFLUXNode,
-    "Get_HFToken": Get_HFToken
+    "NIMFLUXNode": NIMFLUXNode
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "LoadNIMNode": "Load NIM",
-    "NIMFLUXNode": "NIM FLUX",
-    "Get_HFToken": "Use HF_TOKEN EnVar"
+    "NIMFLUXNode": "NIM FLUX"
 }
