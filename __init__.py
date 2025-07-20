@@ -211,10 +211,12 @@ class InstallNIMNode:
 # Update the mappings
 NODE_CLASS_MAPPINGS = {
     "LoadNIMNode": LoadNIMNode,
+    "InstallNIMNode": InstallNIMNode,
     "NIMFLUXNode": NIMFLUXNode
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "LoadNIMNode": "Load NIM",
+    "InstallNIMNode": "Install NIM",
     "NIMFLUXNode": "NIM FLUX"
 }
