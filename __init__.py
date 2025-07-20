@@ -162,13 +162,6 @@ class LoadNIMNode:
             }
         }
     
-    # RETURN_TYPES = ()
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("is_nim_started",)
-    OUTPUT_NODE = True
-    FUNCTION = "prcoess_nim"
-    CATEGORY = "NVIDIA/NIM"
-
     def prcoess_nim(self, model_type: str, operation: str, offloading_policy: str, hf_token: str, is_nim_installed: bool):
         if is_nim_installed:
             if operation == "Start":
