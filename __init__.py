@@ -146,6 +146,7 @@ class LoadNIMNode:
         pass
     
     @classmethod
+    @classmethod
     def INPUT_TYPES(s):
         return {
             "required": {
@@ -157,7 +158,12 @@ class LoadNIMNode:
                 "offloading_policy": ([e.value for e in OffloadingPolicy], {
                     "default": OffloadingPolicy.DEFAULT.value,
                     "tooltip": "Policy to offload models"
-                })
+                }),
+                "hf_token": ("STRING", {
+                    "default": os.environ.get("HF_TOKEN", ""),
+                    "tooltip": "Input your Huggingface API Token"
+                }),
+                "is_nim_installed": ("BOOLEAN", {"forceInput": True}),
             }
         }
     
@@ -168,9 +174,7 @@ class LoadNIMNode:
     FUNCTION = "prcoess_nim"
     CATEGORY = "NVIDIA/NIM"
 
-    hf_token = os.environ.get("HF_TOKEN", "")
-    is_nim_started = True
-    
+   
     def prcoess_nim(self, model_type: str, operation: str, offloading_policy: str, hf_token: str, is_nim_started):
         if is_nim_started:
             if operation == "Start":
