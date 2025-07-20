@@ -157,11 +157,17 @@ class LoadNIMNode:
                 "offloading_policy": ([e.value for e in OffloadingPolicy], {
                     "default": OffloadingPolicy.DEFAULT.value,
                     "tooltip": "Policy to offload models"
-                }),
-                "is_nim_installed": ("BOOLEAN", {"forceInput": True}),
+                })
             }
         }
     
+    # RETURN_TYPES = ()
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("is_nim_started",)
+    OUTPUT_NODE = True
+    FUNCTION = "prcoess_nim"
+    CATEGORY = "NVIDIA/NIM"
+
     def prcoess_nim(self, model_type: str, operation: str, offloading_policy: str, hf_token: str, is_nim_installed: bool):
         if is_nim_installed:
             if operation == "Start":
@@ -180,36 +186,16 @@ class LoadNIMNode:
         return ("",)
 
 
-class InstallNIMNode:
-    def __init__(self):
-        pass
-    
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {}
-        }
-    
-    # RETURN_TYPES = ()
-    RETURN_TYPES = ("BOOLEAN",)
-    RETURN_NAMES = ("is_nim_installed",)
-    OUTPUT_NODE = True
-    FUNCTION = "install_nim"
-    CATEGORY = "NVIDIA/NIM"
-    
-    def install_nim(self):
-        return (True,)
+
     
 
 # Update the mappings
 NODE_CLASS_MAPPINGS = {
     "LoadNIMNode": LoadNIMNode,
-    "InstallNIMNode": InstallNIMNode,
     "NIMFLUXNode": NIMFLUXNode
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "LoadNIMNode": "Load NIM",
-    "InstallNIMNode": "Install NIM",
     "NIMFLUXNode": "NIM FLUX"
 }
