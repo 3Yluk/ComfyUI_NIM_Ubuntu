@@ -76,14 +76,7 @@ class NIMManager_ubuntu:
 
     # --- 4.3. 核心 Docker 操作 ---
     
-    def _setup_directories(self, model_name: ModelType) -> None:
-        """
-        创建模型缓存目录（如果不存在）。
-        """
-        from pathlib import Path
-        cache_path = self.local_nim_cache
-        if not cache_path:
-            raise Exception("LOCAL_NIM_CACHE 环境变量未设置")
+
 
     def get_running_container_info(self) -> Dict:
         """
@@ -134,7 +127,7 @@ class NIMManager_ubuntu:
             self.stop_nim(model_name, force=True)
         return False
         
-    def start_nim_container(self, model_name: ModelType, offloading_policy: OffloadingPolicy, hf_token: str = "") -> None:
+    def start_nim_container(self, model_name: ModelType,  hf_token: str = "") -> None:
         """
         使用 docker run 启动 NIM 容器。
         """
@@ -159,11 +152,11 @@ class NIMManager_ubuntu:
             f"--shm-size=16GB  "
             f"-e NGC_API_KEY={self.api_key}  "
             f"-e HF_TOKEN={self.hf_token}  "
-            f"-e NIM_RELAX_MEM_CONSTRAINTS=1  "
-            f"-e NIM_OFFLOADING_POLICY={offloading_policy.value.replace(' f\"', '_').lower()}  "
+            f"-e NIM_RELAX_MEM_CONSTRAINTS=1  " 
             f"-e NIM_MODEL_VARIANT={variant}  "
             f"-p {port}:8000  "
-            f"-v {self.local_nim_cache}:/opt/nim/.cache   " 
+            f"-v {self.local_nim_cache}:/opt/nim/.cache   "
+            f"{self.MODEL_REGISTRY[model_name]} "
         )
         print("Executing command:", command)
 
@@ -201,13 +194,12 @@ class NIMManager_ubuntu:
 
 
     # --- 4.4. 辅助与清理方法 (部分修改) ---
-    def deploy_nim(self, model_name: ModelType, offloading_policy: OffloadingPolicy, hf_token: str) -> None:
+    def deploy_nim(self, model_name: ModelType,  hf_token: str) -> None:
         """
         部署 NIM 的高级接口。逻辑不变。
         """
         self.start_nim_container(
-            model_name,
-            offloading_policy,
+            model_name, 
             hf_token
         )
 
@@ -262,12 +254,10 @@ class NIMManager_ubuntu:
 # --- 测试入口 (更新为新类名) ---
 if __name__ == "__main__": 
 
-    model_name = ModelType.FLUX_DEV
-    offloading_policy = OffloadingPolicy.DEFAULT 
-
+    model_name = ModelType.FLUX_DEV 
     manager = NIMManager_ubuntu()
     try:
-        manager.deploy_nim(model_name, offloading_policy, hf_token="")
+        manager.deploy_nim(model_name, hf_token="")
         print(f"NIM for {model_name.value} is running on port {manager.get_port(model_name)}")
         print("Waiting for 20 seconds before stopping...")
         time.sleep(20)
