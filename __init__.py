@@ -144,8 +144,7 @@ class NIMFLUXNode:
 class LoadNIMNode:
     def __init__(self):
         pass
-    
-    @classmethod
+
     @classmethod
     def INPUT_TYPES(s):
         return {
