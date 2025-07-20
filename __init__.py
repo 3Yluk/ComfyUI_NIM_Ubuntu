@@ -168,8 +168,11 @@ class LoadNIMNode:
     FUNCTION = "prcoess_nim"
     CATEGORY = "NVIDIA/NIM"
 
-    def prcoess_nim(self, model_type: str, operation: str, offloading_policy: str, hf_token: str, is_nim_installed: bool):
-        if is_nim_installed:
+    hf_token = os.environ.get("HF_TOKEN", "")
+    is_nim_started = True
+    
+    def prcoess_nim(self, model_type: str, operation: str, offloading_policy: str, hf_token: str, is_nim_started):
+        if is_nim_started:
             if operation == "Start":
                 return (self.start_nim(model_type, offloading_policy, hf_token),)
             elif operation == "Stop":
