@@ -187,7 +187,26 @@ class LoadNIMNode:
         return ("",)
 
 
-
+class InstallNIMNode:
+    def __init__(self):
+        pass
+    
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {}
+        }
+    
+    # RETURN_TYPES = ()
+    RETURN_TYPES = ("BOOLEAN",)
+    RETURN_NAMES = ("is_nim_installed",)
+    OUTPUT_NODE = True
+    FUNCTION = "install_nim"
+    CATEGORY = "NVIDIA/NIM"
+    
+    def install_nim(self):
+        return (True,)
+    
 
 # Update the mappings
 NODE_CLASS_MAPPINGS = {
