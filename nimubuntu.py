@@ -77,7 +77,15 @@ class NIMManager_ubuntu:
     # --- 4.3. 核心 Docker 操作 ---
     
 
-
+    def _setup_directories(self, model_name: ModelType) -> None:
+        """
+        创建模型缓存目录（如果不存在）。
+        """
+        from pathlib import Path
+        cache_path = self.local_nim_cache
+        if not cache_path:
+            raise Exception("LOCAL_NIM_CACHE 环境变量未设置")
+        
     def get_running_container_info(self) -> Dict:
         """
         获取正在运行的 Docker 容器信息，并适配 docker ps 的输出。
