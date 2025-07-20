@@ -162,8 +162,7 @@ class LoadNIMNode:
                 "hf_token": ("STRING", {
                     "default": os.environ.get("HF_TOKEN", ""),
                     "tooltip": "Input your Huggingface API Token"
-                }),
-                "is_nim_installed": ("BOOLEAN", {"forceInput": True}),
+                })
             }
         }
     
@@ -175,14 +174,12 @@ class LoadNIMNode:
     CATEGORY = "NVIDIA/NIM"
 
    
-    def prcoess_nim(self, model_type: str, operation: str, offloading_policy: str, hf_token: str, is_nim_started):
-        if is_nim_started:
-            if operation == "Start":
-                return (self.start_nim(model_type, offloading_policy, hf_token),)
-            elif operation == "Stop":
-                return (self.stop_nim(model_type),)
-        else:
-            raise Exception("Please make sure install NIMs before running this node")
+    def prcoess_nim(self, model_type: str, operation: str, offloading_policy: str, hf_token: str ):
+        if operation == "Start":
+            return (self.start_nim(model_type, offloading_policy, hf_token),)
+        elif operation == "Stop":
+            return (self.stop_nim(model_type),)
+ 
     
     def start_nim(self, model_type: str, offloading_policy: str, hf_token: str):
         manager.deploy_nim(model_name=ModelType[model_type], offloading_policy=offloading_policy, hf_token=hf_token)
