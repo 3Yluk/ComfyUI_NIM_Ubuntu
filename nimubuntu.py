@@ -163,8 +163,7 @@ class NIMManager_ubuntu:
             f"-e NIM_OFFLOADING_POLICY={offloading_policy.value.replace(' f\"', '_').lower()}  "
             f"-e NIM_MODEL_VARIANT={variant}  "
             f"-p {port}:8000  "
-            f"-v {self.local_nim_cache}:/opt/nim/.cache   "
-            f"{self.MODEL_REGISTRY[model_name]} "
+            f"-v {self.local_nim_cache}:/opt/nim/.cache   " 
         )
         print("Executing command:", command)
 
