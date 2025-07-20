@@ -144,6 +144,7 @@ class NIMFLUXNode:
 class LoadNIMNode:
     def __init__(self):
         pass
+    
 
     @classmethod
     def INPUT_TYPES(s):
@@ -153,11 +154,7 @@ class LoadNIMNode:
                     "default": ModelType.FLUX_DEV.value,
                     "tooltip": "The type of NIM model to use"
                 }),
-                "operation": (["Start", "Stop"],),
-                "offloading_policy": ([e.value for e in OffloadingPolicy], {
-                    "default": OffloadingPolicy.DEFAULT.value,
-                    "tooltip": "Policy to offload models"
-                }),
+                "operation": (["Start", "Stop"],), 
                 "hf_token": ("STRING", {
                     "default": os.environ.get("HF_TOKEN", ""),
                     "tooltip": "Input your Huggingface API Token"
@@ -173,15 +170,15 @@ class LoadNIMNode:
     CATEGORY = "NVIDIA/NIM"
 
    
-    def prcoess_nim(self, model_type: str, operation: str, offloading_policy: str, hf_token: str ):
+    def prcoess_nim(self, model_type: str, operation: str,  hf_token: str ):
         if operation == "Start":
-            return (self.start_nim(model_type, offloading_policy, hf_token),)
+            return (self.start_nim(model_type,  hf_token),)
         elif operation == "Stop":
             return (self.stop_nim(model_type),)
  
     
-    def start_nim(self, model_type: str, offloading_policy: str, hf_token: str):
-        manager.deploy_nim(model_name=ModelType[model_type], offloading_policy=offloading_policy, hf_token=hf_token)
+    def start_nim(self, model_type: str,  hf_token: str):
+        manager.deploy_nim(model_name=ModelType[model_type],  hf_token=hf_token)
         return (model_type,)
     
     def stop_nim(self, model_type: str):
