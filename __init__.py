@@ -76,16 +76,22 @@ class NIMFLUXNode:
 
     def generate(self, width, height, prompt, cfg_scale, seed, steps, model_type, image=None):
         model_name = ModelType[model_type]
+
+        if model_type in ["FLUX_DEV", "FLUX_CANNY", "FLUX_DEPTH"]:
+            model_type_uni = "FLUX_DEV"
+            model_name_uni = ModelType[model_type_uni]
+
+
         try:
-            manager.is_nim_running(model_name)
-            print(f"NIM for {model_name.value} is running on port {manager.get_port(model_name)}")
+            manager.is_nim_running(model_name_uni)
+            print(f"NIM for {model_name_uni.value} is running on port {manager.get_port(model_name_uni)}")
             print("Waiting for 20 seconds  ...")
             time.sleep(20)
         finally:
             print("OK.")
         
 
-        port = manager.get_port(model_name)
+        port = manager.get_port(model_name_uni)
         print(f"Using port: {port}")
 
         invoke_url = f"http://localhost:{port}/v1/infer"
