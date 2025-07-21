@@ -169,7 +169,8 @@ class LoadNIMNode:
 
    
     def process_nim(self, model_type: str, hf_token: str ):
-        return ((model_type,))
+        model_type = ModelType[model_type]
+        return (model_type,)
 
 # Update the mappings
 NODE_CLASS_MAPPINGS = {
