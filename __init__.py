@@ -164,12 +164,12 @@ class LoadNIMNode:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("is_nim_started",)
     OUTPUT_NODE = True
-    FUNCTION = "prcoess_nim"
+    FUNCTION = "process_nim"
     CATEGORY = "NVIDIA/NIM"
 
    
-    def process_nim(model_type: str, hf_token: str ):
-        return (model_type, hf_token)
+    def process_nim(self, model_type: str, hf_token: str ):
+        return (model_type,)
 
 # Update the mappings
 NODE_CLASS_MAPPINGS = {
