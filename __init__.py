@@ -10,7 +10,7 @@ import torch
 from PIL import Image
 from typing import Dict, Tuple
 
-from .nimubuntu import ModelType, NIMManager_ubuntu, OffloadingPolicy
+from .nimubuntu import ModelType, NIMManager_ubuntu
 
 
 manager = NIMManager_ubuntu()
@@ -144,7 +144,6 @@ class NIMFLUXNode:
 class LoadNIMNode:
     def __init__(self):
         pass
-    
 
     @classmethod
     def INPUT_TYPES(s):
@@ -154,7 +153,6 @@ class LoadNIMNode:
                     "default": ModelType.FLUX_DEV.value,
                     "tooltip": "The type of NIM model to use"
                 }),
-                "operation": (["Start", "Stop"],), 
                 "hf_token": ("STRING", {
                     "default": os.environ.get("HF_TOKEN", ""),
                     "tooltip": "Input your Huggingface API Token"
@@ -170,24 +168,8 @@ class LoadNIMNode:
     CATEGORY = "NVIDIA/NIM"
 
    
-    def prcoess_nim(self, model_type: str, operation: str,  hf_token: str ):
-        if operation == "Start":
-            return (self.start_nim(model_type,  hf_token),)
-        elif operation == "Stop":
-            return (self.stop_nim(model_type),)
- 
-    
-    def start_nim(self, model_type: str,  hf_token: str):
-        manager.deploy_nim(model_name=ModelType[model_type],  hf_token=hf_token)
-        return (model_type,)
-    
-    def stop_nim(self, model_type: str):
-        manager.stop_nim(model_name=ModelType[model_type])
-        return ("",)
-
-
-
-    
+    def process_nim(model_type: str, hf_token: str ):
+        return (model_type, hf_token)
 
 # Update the mappings
 NODE_CLASS_MAPPINGS = {
