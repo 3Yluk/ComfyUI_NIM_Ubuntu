@@ -23,8 +23,11 @@ class NIMFLUXNode:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "is_nim_started": ("STRING", {"forceInput": True}),
-                "width": (["768", "832", "896", "960", "1024", "1088", "1152", "1216", "1280", "1344"], {  # noqa: E501
+                "model_type": ([e.value for e in ModelType], {
+                    "default": ModelType.FLUX_DEV.value,
+                    "tooltip": "The type of NIM model to use"
+                }),
+                "width": (["768", "832", "896", "960", "1024", "1088", "1152", "1216", "1280", "1344"], {   
                     "default": "1024",
                     "tooltip": "Width of the image to generate, in pixels."
                 }),
@@ -71,14 +74,11 @@ class NIMFLUXNode:
     CATEGORY = "NVIDIA/NIM"
 
 
-    def generate(self, width, height, prompt, cfg_scale, seed, steps, is_nim_started, image=None):
-        if is_nim_started[0] == "":
-            raise Exception("Please make sure use 'Load NIM' before this node to start NIM.")
-        model_name = ModelType[is_nim_started[0]]
+    def generate(self, width, height, prompt, cfg_scale, seed, steps, model_type, image=None):
+        model_name = ModelType[model_type].value
         port = manager.get_port(model_name)
         invoke_url = f"http://localhost:{port}/v1/infer"
 
-        #mode = model_name.value.split("_")[-1].lower().replace("dev", "base")
         mode = NIMManager_ubuntu._get_variant(self, model_name)
 
         if model_name.value.split('_')[-1].lower() == 'schnell':
@@ -141,44 +141,11 @@ class NIMFLUXNode:
         return (image,)
 
 
-class LoadNIMNode:
-    def __init__(self):
-        pass
-
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "model_type": ([e.value for e in ModelType], {
-                    "default": ModelType.FLUX_DEV.value,
-                    "tooltip": "The type of NIM model to use"
-                }),
-                "hf_token": ("STRING", {
-                    "default": os.environ.get("HF_TOKEN", ""),
-                    "tooltip": "Input your Huggingface API Token"
-                })
-            }
-        }
-    
-    # RETURN_TYPES = ()
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("is_nim_started",)
-    OUTPUT_NODE = True
-    FUNCTION = "process_nim"
-    CATEGORY = "NVIDIA/NIM"
-
-   
-    def process_nim(self, model_type: str, hf_token: str ):
-        model_type = ModelType[model_type]
-        return (model_type,)
-
 # Update the mappings
 NODE_CLASS_MAPPINGS = {
-    "LoadNIMNode": LoadNIMNode,
     "NIMFLUXNode": NIMFLUXNode
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "LoadNIMNode": "Load NIM",
     "NIMFLUXNode": "NIM FLUX"
 }
