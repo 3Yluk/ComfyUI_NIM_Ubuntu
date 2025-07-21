@@ -76,7 +76,10 @@ class NIMFLUXNode:
 
     def generate(self, width, height, prompt, cfg_scale, seed, steps, model_type, image=None):
         model_name = ModelType[model_type].value
+        print(f"Generating image with model: {model_name} ")
         port = manager.get_port(model_name)
+        print(f"Using port: {port}")
+        
         invoke_url = f"http://localhost:{port}/v1/infer"
 
         mode = NIMManager_ubuntu._get_variant(self, model_name)
